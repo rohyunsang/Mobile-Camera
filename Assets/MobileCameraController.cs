@@ -4,15 +4,66 @@ using UnityEngine;
 
 public class MobileCameraController : MonoBehaviour
 {
-    // Start is called before the first frame update
+    float mouseZoomSpeed = 15.0f;
+    float touchZoomSpeed = 0.1f;
+    float zoomMinBound = 0.5f;
+    float zoomMaxBound = 10f;
+    Camera cam;
+
+    // Use this for initialization
     void Start()
     {
-        
+        cam = GetComponent<Camera>();
     }
 
-    // Update is called once per frame
     void Update()
     {
-        
+        if (Input.touchSupported)
+        {
+            // Pinch to zoom
+            if (Input.touchCount == 2)
+            {
+
+                // get current touch positions
+                Touch tZero = Input.GetTouch(0);
+                Touch tOne = Input.GetTouch(1);
+                // get touch position from the previous frame
+                Vector2 tZeroPrevious = tZero.position - tZero.deltaPosition;
+                Vector2 tOnePrevious = tOne.position - tOne.deltaPosition;
+
+                float oldTouchDistance = Vector2.Distance(tZeroPrevious, tOnePrevious);
+                float currentTouchDistance = Vector2.Distance(tZero.position, tOne.position);
+
+                // get offset value
+                float deltaDistance = oldTouchDistance - currentTouchDistance;
+                Zoom(deltaDistance, touchZoomSpeed);
+            }
+        }
+        else
+        {
+
+            float scroll = Input.GetAxis("Mouse ScrollWheel");
+            Zoom(scroll, mouseZoomSpeed);
+        }
+
+
+
+        if (cam.fieldOfView < zoomMinBound)
+        {
+            cam.fieldOfView = zoomMinBound;
+        }
+        else
+        if (cam.fieldOfView > zoomMaxBound)
+        {
+            cam.fieldOfView = zoomMaxBound;
+        }
+    }
+
+    void Zoom(float deltaMagnitudeDiff, float speed)
+    {
+
+        cam.fieldOfView += deltaMagnitudeDiff * speed;
+        // set min and max value of Clamp function upon your requirement
+        cam.fieldOfView = Mathf.Clamp(cam.fieldOfView, zoomMinBound, zoomMaxBound);
     }
 }
