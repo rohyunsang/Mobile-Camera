@@ -5,5 +5,6 @@ Method : 2 Point Zoom, 1 Point Move, Clamp Camera Position, Min Zoom -> Dont Mov
 How to use : just Attach MobileCameraController.cs Your MainCamera
 
 Notify : it correctly work in Android, Reverse Move in Editor
+
        : My Camera is rotated y 90 
 
