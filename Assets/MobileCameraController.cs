@@ -8,12 +8,16 @@ public class MobileCameraController : MonoBehaviour
     float touchZoomSpeed = 0.05f;
     float zoomMinBound = 10.0f;
     float zoomMaxBound = 50f;
-    float dragSpeed = 0.005f; // 드래그 이동 속도 조절
+    float dragSpeed = 0.005f; 
+    float returnSpeed = 10f; // Camera Back To Origin Pos
     Camera cam;
+    private bool returnToOrigin = false;   // 
 
+    private Vector3 originCameraPosition;
     void Start()
     {
         cam = GetComponent<Camera>();
+        originCameraPosition = cam.transform.position;
     }
 
     void Update()
@@ -26,7 +30,7 @@ public class MobileCameraController : MonoBehaviour
                 if (touch.phase == TouchPhase.Moved)
                 {
                     Vector2 delta = touch.deltaPosition;
-                    // 드래그 방향에 따라 카메라 이동을 위아래/좌우로 조정
+                    
                     DragCamera(delta.y * dragSpeed, -delta.x * dragSpeed);
                 }
             }
@@ -59,17 +63,31 @@ public class MobileCameraController : MonoBehaviour
         }
 
         ClampCameraFOV();
+
+        if (returnToOrigin)
+        {
+            
+            cam.transform.position = Vector3.Lerp(cam.transform.position, originCameraPosition, returnSpeed * Time.deltaTime);
+            
+            if (Vector3.Distance(cam.transform.position, originCameraPosition) < 0.01f)
+            {
+                cam.transform.position = originCameraPosition;
+                returnToOrigin = false;
+            }
+        }
     }
 
     void Zoom(float deltaMagnitudeDiff, float speed)
     {
         cam.fieldOfView += deltaMagnitudeDiff * speed;
         cam.fieldOfView = Mathf.Clamp(cam.fieldOfView, zoomMinBound, zoomMaxBound);
+
+        returnToOrigin = cam.fieldOfView >= zoomMaxBound;
     }
 
     void DragCamera(float deltaX, float deltaZ)
     {
-        // 카메라 이동 로직 수정: x축과 z축 사용 조정
+        // 카메라 이동 로직
         Vector3 move = new Vector3(deltaX, 0, deltaZ);
         cam.transform.Translate(move, Space.World);
     }
