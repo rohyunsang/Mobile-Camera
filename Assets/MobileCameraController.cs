@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class MobileCameraController : MonoBehaviour
 {
-    float mouseZoomSpeed = 15.0f;
-    float touchZoomSpeed = 0.1f;
-    float zoomMinBound = 0.5f;
+    float mouseZoomSpeed = 50.0f;
+    float touchZoomSpeed = 0.05f;
+    float zoomMinBound = 10.0f;
     float zoomMaxBound = 50f;
     float dragSpeed = 0.005f; // 드래그 이동 속도 조절
     Camera cam;
@@ -26,7 +26,8 @@ public class MobileCameraController : MonoBehaviour
                 if (touch.phase == TouchPhase.Moved)
                 {
                     Vector2 delta = touch.deltaPosition;
-                    DragCamera(new Vector3(-delta.x, -delta.y, 0) * dragSpeed);
+                    // 드래그 방향에 따라 카메라 이동을 위아래/좌우로 조정
+                    DragCamera(delta.y * dragSpeed, -delta.x * dragSpeed);
                 }
             }
             else if (Input.touchCount == 2)
@@ -47,10 +48,10 @@ public class MobileCameraController : MonoBehaviour
         }
         else
         {
-            if (Input.GetMouseButton(0)) // 마우스 왼쪽 버튼을 누르고 있을 때
+            if (Input.GetMouseButton(0)) 
             {
-                Vector3 delta = new Vector3(-Input.GetAxis("Mouse X"), -Input.GetAxis("Mouse Y"), 0);
-                DragCamera(delta * dragSpeed);
+                Vector3 delta = new Vector3(-Input.GetAxis("Mouse Y"), 0, -Input.GetAxis("Mouse X"));
+                DragCamera(delta.x * dragSpeed, delta.z * dragSpeed);
             }
 
             float scroll = Input.GetAxis("Mouse ScrollWheel");
@@ -66,10 +67,11 @@ public class MobileCameraController : MonoBehaviour
         cam.fieldOfView = Mathf.Clamp(cam.fieldOfView, zoomMinBound, zoomMaxBound);
     }
 
-    void DragCamera(Vector3 delta)
+    void DragCamera(float deltaX, float deltaZ)
     {
-        // 카메라 위치 업데이트
-        cam.transform.Translate(delta, Space.World);
+        // 카메라 이동 로직 수정: x축과 z축 사용 조정
+        Vector3 move = new Vector3(deltaX, 0, deltaZ);
+        cam.transform.Translate(move, Space.World);
     }
 
     void ClampCameraFOV()
